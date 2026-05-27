@@ -678,7 +678,7 @@ function analyzeLin(d){
       　（非固定百分比，跌破均線即出場）
     </div>
     <div class="concl ${vclass}"><div class="concl-lbl">均線女王 · 結論</div><div class="concl-text">${esc(verdict)}</div></div>`,
-    verdict,vclass,stopLoss:ma20wVal};
+    verdict,vclass,stopLoss:ma20wVal,entryPrice:d.close};
 }
 
 function analyzeLei(d){
@@ -718,7 +718,10 @@ function analyzeLei(d){
 
   let verdict,vclass;
   if(kc===3&&evalScore>=2&&(perOK||perLow)){verdict=`三刀齊備＋評鑑${evalScore}/4，現價進場，目標波段+30~50%，停損${stopLoss.toFixed(1)}（-10%）`;vclass='concl-buy';}
-  else if(kc>=1&&evalScore>=2){verdict=`基本面通過${evalScore}/4，第${kc}刀確認，等第${kc+1}刀再建倉，停損${stopLoss.toFixed(1)}`;vclass='concl-wait';}
+  else if(kc===3&&evalScore<2){verdict=`三刀齊備但基本面偏弱（評鑑${evalScore}/4），建議小量試單，停損${stopLoss.toFixed(1)}`;vclass='concl-wait';}
+  else if(kc===2&&evalScore>=2){verdict=`前兩刀確認＋基本面${evalScore}/4，等第三刀（MACD柱增強＋K>50）出現再建倉，停損${stopLoss.toFixed(1)}`;vclass='concl-wait';}
+  else if(kc===1&&evalScore>=2){verdict=`第一刀出現＋基本面${evalScore}/4，等第二刀（MACD黃金交叉＋KD交叉）確認再進場，停損${stopLoss.toFixed(1)}`;vclass='concl-wait';}
+  else if(kc>=1){verdict=`第${kc}刀確認但基本面條件不足，繼續觀察，停損${stopLoss.toFixed(1)}`;vclass='concl-wait';}
   else if(perHigh){verdict=`本益比${d.per?d.per.toFixed(1):'?'}x偏貴，等回調或業績進一步加速`;vclass='concl-wait';}
   else{verdict='條件不足，繼續觀察';vclass='concl-wait';}
 
@@ -736,7 +739,7 @@ function analyzeLei(d){
     <div style="font-size:12px;margin:6px 0;color:${perColor}">${esc(perDesc)}</div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--gray);margin-bottom:8px">停損 <strong style="color:var(--down)">${stopLoss.toFixed(1)}</strong>（買價 -10% 原則）</div>
     <div class="concl ${vclass}"><div class="concl-lbl">獵豹董座 · 結論</div><div class="concl-text">${esc(verdict)}</div></div>`,
-    verdict,vclass,stopLoss};
+    verdict,vclass,stopLoss,entryPrice:d.close};
 }
 
 function analyzeMark(d){
@@ -771,80 +774,106 @@ function analyzeMark(d){
     <div style="font-family:var(--mono);font-size:11px;color:var(--gray);margin-bottom:4px">樞紐點 → <strong style="color:var(--bb)">${pivot.toFixed(1)}</strong>　突破+爆量為進場訊號</div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--gray);margin-bottom:8px">停損 → <strong style="color:var(--down)">${stopLoss.toFixed(1)}</strong>（買價 -10% 上限）</div>
     <div class="concl ${vclass}"><div class="concl-lbl">績效大師 · 結論</div><div class="concl-text">${esc(verdict)}</div></div>`,
-    verdict,vclass,stopLoss};
+    verdict,vclass,stopLoss,entryPrice:pivot};
 }
 
 // ── 綜合總結 ──
 function buildSummary(d, results){
+  const ids = Array.from(selected);
+  const CFG = {
+    lin:{name:'均線女王',emoji:'👑'},
+    lei:{name:'獵豹董座',emoji:'⚡'},
+    mark:{name:'績效大師',emoji:'🚀'},
+  };
   const votes={buy:0,wait:0,sell:0};
-  const stopLosses=[];
   results.forEach(r=>{
     if(!r)return;
     if(r.vclass==='concl-buy')votes.buy++;
     else if(r.vclass==='concl-sell')votes.sell++;
     else votes.wait++;
-    if(r.stopLoss)stopLosses.push(r.stopLoss);
   });
 
-  const total=votes.buy+votes.wait+votes.sell;
   let overallVerdict,overallClass,overallColor;
   if(votes.buy>=2){overallVerdict='多數派建議可以進場';overallClass='concl-buy';overallColor='var(--up)';}
   else if(votes.sell>=2){overallVerdict='多數派建議停損或避開';overallClass='concl-sell';overallColor='var(--down)';}
   else{overallVerdict='三派意見分歧，建議觀望等待更明確訊號';overallClass='concl-wait';overallColor='var(--bb-dark)';}
 
-  // 建議買入點
-  const ma20wVal=d.ma20wVal;
-  let entryDesc='';
-  if(votes.buy>=2&&ma20wVal){
-    const entryLow=ma20wVal*(1.01); // 剛突破1%乖離
-    const entryHigh=d.close;
-    entryDesc=`${entryLow.toFixed(1)} ~ ${entryHigh.toFixed(1)}（現價附近，乖離率${d.bias!=null?d.bias.toFixed(1)+'%':'—'}）`;
-  } else if(votes.buy>=1&&ma20wVal){
-    entryDesc=`等回測20週線（${ma20wVal.toFixed(1)}）附近再分批進場`;
-  } else {
-    entryDesc='目前不建議進場，等待訊號明確';
-  }
+  // 三師各自買入價 & 停損
+  const masterRows = ids.map((id,i)=>{
+    const r = results[i];
+    const c = CFG[id];
+    if(!r) return '';
+    const entryVal = r.entryPrice ? r.entryPrice.toFixed(1) : '—';
+    const stopVal  = r.stopLoss   ? r.stopLoss.toFixed(1)   : '—';
+    const isGood   = r.vclass==='concl-buy';
+    const isBad    = r.vclass==='concl-sell';
+    const rowColor = isGood?'var(--up)':isBad?'var(--down)':'var(--bb-dark)';
+    return`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:6px;">
+      <div style="background:var(--white);padding:8px 10px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:14px">${c.emoji}</span>
+        <span style="font-size:12px;font-weight:600;color:${rowColor}">${c.name}</span>
+      </div>
+      <div style="background:var(--white);padding:8px 10px;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--lgray);margin-bottom:2px;">建議</div>
+        <div style="font-size:12px;font-weight:600;color:${rowColor}">${isGood?'可進場':isBad?'避開/停損':'觀望'}</div>
+      </div>
+      <div style="background:var(--white);padding:8px 10px;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--lgray);margin-bottom:2px;">買入價</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--up)">${entryVal}</div>
+      </div>
+      <div style="background:var(--white);padding:8px 10px;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--lgray);margin-bottom:2px;">停損價</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--down)">${stopVal}</div>
+      </div>
+    </div>`;
+  }).join('');
 
-  // 最保守停損
-  const minStop=stopLosses.length?Math.max(...stopLosses):null;
-  const stopDesc=minStop?`${minStop.toFixed(1)}（20週線，跌破即出場）`:d.close?(d.close*0.90).toFixed(1)+' (-10%)':'—';
+  // 最終建議買入價 & 停損（取三師中位數或最保守）
+  const entryPrices = results.filter(r=>r&&r.entryPrice).map(r=>r.entryPrice);
+  const stopPrices  = results.filter(r=>r&&r.stopLoss).map(r=>r.stopLoss);
+  const finalEntry  = entryPrices.length ? (entryPrices.reduce((a,b)=>a+b,0)/entryPrices.length) : null;
+  const finalStop   = stopPrices.length  ? Math.max(...stopPrices) : null; // 最保守（最高）停損
 
-  // 均線回測建議
-  const ma5=d.ma5,ma20=d.ma20;
+  // 均線策略
+  const ma5=d.ma5,ma20=d.ma20,ma20wVal=d.ma20wVal;
   let maStrategy='';
   if(ma5&&ma20){
-    if(d.close>ma5&&ma5>ma20){maStrategy='5日線站上20日線且均線多頭排列，短線強勢，可持有';}
-    else if(d.close<ma5&&d.close>ma20){maStrategy='回測5日線但仍在20日線上方，可考慮逢低分批承接';}
-    else if(d.close>ma20wVal){maStrategy='站上20週線但短線均線偏弱，等5日線回穩再加碼';}
-    else{maStrategy='短中長線均線偏空，不建議進場';}
+    if(d.close>ma5&&ma5>ma20) maStrategy='5日線>20日線，均線多頭排列，短線強勢可持有';
+    else if(d.close<ma5&&d.close>ma20) maStrategy='回測5日線，仍在20日線上方，可逢低分批承接';
+    else if(ma20wVal&&d.close>ma20wVal) maStrategy='站上20週線但短線偏弱，等5日線回穩再加碼';
+    else maStrategy='均線偏空，不建議進場';
   }
 
   return`
     <div class="summary-block">
       <div class="summary-title">綜合三派總結</div>
-      <div class="summary-grid">
-        <div class="sum-card">
-          <div class="sum-card-label">三派投票</div>
-          <div class="sum-card-val" style="color:${overallColor}">${votes.buy}買 ${votes.wait}觀望 ${votes.sell}避開</div>
-          <div class="sum-card-sub">${overallVerdict}</div>
+
+      <!-- 三師各自買入/停損對照表 -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--lgray);letter-spacing:0.15em;margin-bottom:8px;">三派各自建議</div>
+      ${masterRows}
+
+      <!-- 最終大欄位 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 10px;">
+        <div style="background:var(--white);border:1.5px solid rgba(21,128,61,0.3);border-radius:8px;padding:16px;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--lgray);letter-spacing:0.15em;margin-bottom:6px;">最終建議買入價</div>
+          <div style="font-family:var(--mono);font-size:26px;font-weight:600;color:var(--up)">${finalEntry?finalEntry.toFixed(1):'—'}</div>
+          <div style="font-size:10px;color:var(--gray);margin-top:4px">${votes.buy>=2?'現價附近分批進場':'等待訊號明確再進場'}</div>
         </div>
-        <div class="sum-card">
-          <div class="sum-card-label">建議買入區間</div>
-          <div class="sum-card-val" style="font-size:12px;color:var(--bb-dark)">${esc(entryDesc)}</div>
-        </div>
-        <div class="sum-card">
-          <div class="sum-card-label">停損價</div>
-          <div class="sum-card-val" style="color:var(--down)">${esc(stopDesc)}</div>
-          <div class="sum-card-sub">均線女王：跌破20週線出場</div>
+        <div style="background:var(--white);border:1.5px solid rgba(185,28,28,0.3);border-radius:8px;padding:16px;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--lgray);letter-spacing:0.15em;margin-bottom:6px;">最終停損價</div>
+          <div style="font-family:var(--mono);font-size:26px;font-weight:600;color:var(--down)">${finalStop?finalStop.toFixed(1):'—'}</div>
+          <div style="font-size:10px;color:var(--gray);margin-top:4px">跌破此價立即出場（最保守）</div>
         </div>
       </div>
-      ${maStrategy?`<div style="font-size:12px;color:var(--ink2);padding:10px 14px;background:var(--white);border-radius:6px;border:1px solid var(--line);margin-bottom:10px">
-        <span style="font-family:var(--mono);font-size:9px;color:var(--lgray);display:block;margin-bottom:4px;letter-spacing:0.1em">均線策略建議</span>
+
+      ${maStrategy?`<div style="font-size:12px;color:var(--ink2);padding:10px 14px;background:var(--white);border-radius:6px;border:1px solid var(--line);margin-bottom:10px;">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--lgray);display:block;margin-bottom:4px;letter-spacing:0.1em;">均線策略建議</span>
         ${esc(maStrategy)}
       </div>`:''}
+
       <div class="summary-verdict ${overallClass}">
-        <div class="summary-verdict-lbl">最終建議</div>
-        <div class="summary-verdict-text" style="color:${overallColor}">${overallVerdict} — 停損設在 ${esc(stopDesc)}</div>
+        <div class="summary-verdict-lbl">最終結論</div>
+        <div class="summary-verdict-text" style="color:${overallColor}">${overallVerdict}</div>
       </div>
     </div>`;
 }
