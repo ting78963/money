@@ -308,7 +308,7 @@ body{background:var(--white);color:var(--ink);font-family:var(--sans);font-weigh
         </div>
       </div>
       <div class="ac on-mark" id="mc-mark" onclick="toggleMaster('mark')">
-        <div class="ac-head"><span class="ac-name">超績法師</span><div class="ac-check">✓</div></div>
+        <div class="ac-head"><span class="ac-name">績效大師</span><div class="ac-check">✓</div></div>
         <div class="ac-desc">SEPA趨勢樣板・VCP型態・嚴格停損</div>
         <div class="ac-pills">
           <span class="pill pill-mark">趨勢樣板8條</span>
@@ -366,9 +366,9 @@ async function fetchWithProxy(url){
 const TIPS = {
   ma20w: '【20週均線（100日線）】\n均線女王核心指標。股價站上→多頭，可考慮買進；跌破→立即出場。\n停損價 = 此均線值。',
   bias:  '【乖離率】\n=(現價－20週線)÷20週線×100%\n乖離率越小，進場風險越低，停損空間越小。\n剛突破時乖離最小，是最佳進場點。',
-  ma60:  '【60日均線】\n中期趨勢參考，股價站上60日線代表中期偏多。超績法師SEPA樣板必須符合此條件。',
-  ma150: '【150日均線】\n超績法師SEPA樣板條件之一，股價必須高於150日線且150日線高於200日線。',
-  ma200: '【200日均線】\n長期趨勢分水嶺。超績法師要求200日線本身須呈上升趨勢，且股價必須在其上方。',
+  ma60:  '【60日均線】\n中期趨勢參考，股價站上60日線代表中期偏多。績效大師SEPA樣板必須符合此條件。',
+  ma150: '【150日均線】\n績效大師SEPA樣板條件之一，股價必須高於150日線且150日線高於200日線。',
+  ma200: '【200日均線】\n長期趨勢分水嶺。績效大師要求200日線本身須呈上升趨勢，且股價必須在其上方。',
   macd:  '【MACD (12,26,9)】\nMACD線 > 訊號線 = 黃金交叉，偏多。柱線方向向上代表動能加強，是獵豹三刀第三刀確認訊號之一。',
   kd:    '【KD隨機指標 (9日)】\nK > D = 多方強勢。KD黃金交叉是獵豹三刀第二、三刀確認訊號。K值 > 50代表整體偏強。',
   revYoY:'【月營收年增率 (YoY)】\n今年同月 vs 去年同月成長率。獵豹董座核心篩選條件，連續正成長代表業績加速，是大猩猩題材確認。',
@@ -770,7 +770,7 @@ function analyzeMark(d){
     <div style="font-family:var(--mono);font-size:11px;color:var(--gray);line-height:1.8;margin-bottom:6px">${esc(d.vcp.desc)}</div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--gray);margin-bottom:4px">樞紐點 → <strong style="color:var(--bb)">${pivot.toFixed(1)}</strong>　突破+爆量為進場訊號</div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--gray);margin-bottom:8px">停損 → <strong style="color:var(--down)">${stopLoss.toFixed(1)}</strong>（買價 -10% 上限）</div>
-    <div class="concl ${vclass}"><div class="concl-lbl">超績法師 · 結論</div><div class="concl-text">${esc(verdict)}</div></div>`,
+    <div class="concl ${vclass}"><div class="concl-lbl">績效大師 · 結論</div><div class="concl-text">${esc(verdict)}</div></div>`,
     verdict,vclass,stopLoss};
 }
 
@@ -873,9 +873,9 @@ async function doSend(){
   group.className='resp-group';
   const ids=Array.from(selected);
   const CFG={
-    lin:{name:'均線女王',emoji:'🌸',av:'av-lin',rn:'rn-lin',rt:'rt-lin',tag:'20週均線派'},
+    lin:{name:'均線女王',emoji:'👑',av:'av-lin',rn:'rn-lin',rt:'rt-lin',tag:'20週均線派'},
     lei:{name:'獵豹董座',emoji:'⚡',av:'av-lei',rn:'rn-lei',rt:'rt-lei',tag:'獵豹三刀流'},
-    mark:{name:'超績法師',emoji:'📐',av:'av-mark',rn:'rn-mark',rt:'rt-mark',tag:'SEPA/VCP'},
+    mark:{name:'績效大師',emoji:'🚀',av:'av-mark',rn:'rn-mark',rt:'rt-mark',tag:'SEPA/VCP'},
   };
   const dotColor={lin:'var(--c-lin)',lei:'var(--c-lei)',mark:'var(--c-mark)'};
 
