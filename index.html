@@ -143,9 +143,9 @@ body{padding-bottom:80px}
 .tri-chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .tri-chart-scroll::-webkit-scrollbar{height:3px}
 .tri-chart-scroll::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
-.tri-chart{display:flex;gap:6px;align-items:flex-end;height:170px;min-width:max-content;padding:0 4px}
-.day-col{display:flex;flex-direction:column;align-items:center;width:36px;flex-shrink:0}
-.day-bars{display:flex;gap:2px;align-items:flex-end;width:100%;height:160px}
+.tri-chart{display:flex;gap:10px;align-items:flex-end;height:240px;min-width:max-content;padding:0 8px}
+.day-col{display:flex;flex-direction:column;align-items:center;width:52px;flex-shrink:0}
+.day-bars{display:flex;gap:3px;align-items:flex-end;width:100%;height:220px}
 .bar{border-radius:2px 2px 0 0;width:10px;min-height:2px}
 .bar-foreign{}
 .bar-trust{}
@@ -1281,22 +1281,21 @@ function renderMain(cache){
     const maxVol=Math.max(...last10.map(h=>h.totalVol),1);
     const maxInst=Math.max(...last10.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
 
-    const CHART_H=160;
+    const CHART_H=220;
     const barsHtml=last10.map(h=>{
-      const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*CHART_H),3);
-      const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*CHART_H),3);
-      const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst)*CHART_H),3);
-      // 外資：亮紅/亮綠，投信：深紅/深綠，散戶：淺紅/淺綠
+      const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*CHART_H),4);
+      const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*CHART_H),4);
+      const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst)*CHART_H),4);
       const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
       const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
       const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
       return`<div class="day-col">
         <div class="day-bars">
-          <div class="bar bar-foreign" style="height:${fH}px;background:${fColor};align-self:flex-end"></div>
-          <div class="bar bar-trust" style="height:${tH}px;background:${tColor};align-self:flex-end"></div>
-          <div class="bar bar-retail" style="height:${rH}px;background:${rColor};align-self:flex-end"></div>
+          <div class="bar bar-foreign" style="height:${fH}px;width:14px;background:${fColor};align-self:flex-end;border-radius:3px 3px 0 0"></div>
+          <div class="bar bar-trust" style="height:${tH}px;width:14px;background:${tColor};align-self:flex-end;border-radius:3px 3px 0 0"></div>
+          <div class="bar bar-retail" style="height:${rH}px;width:14px;background:${rColor};align-self:flex-end;border-radius:3px 3px 0 0;opacity:.7"></div>
         </div>
-        <div class="chart-date-cell">${fmtDate(h.date)}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
       </div>`;
     }).join('');
 
