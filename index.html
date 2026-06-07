@@ -1651,12 +1651,15 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
   const barsHtml=last10search.map(h=>{
     const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*200),4);
     const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*200),4);
+    const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst)*200),4);
     const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
     const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
+    const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
     return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:52px">
       <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
         <div style="width:14px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
         <div style="width:14px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
+        <div style="width:14px;height:${rH}px;background:${rColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.6"></div>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
     </div>`;
@@ -1704,6 +1707,7 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
     <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
       <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
       <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅　賣超=綠</span>
     </div>
   </div>
