@@ -1605,13 +1605,14 @@ async function fetchAnyStock(stockId){
 
     const stockInfo={id:stockId,name:stockName,group:'自選股',groupIcon:'🔎'};
     document.getElementById('stock-search-result-title').textContent='🔎 自選股查詢';
-    renderStockDetail(stockInfo,priceRows,instRows,tradingDays);
+    renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdData);
   }catch(e){
     el.innerHTML=`<div class="err">抓取失敗：${e.message}</div>`;
   }
 }
 
-function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
+function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdData){
+  holdData=holdData||[];
 
   if(!priceRows||priceRows.length===0){
     document.getElementById('stock-search-content').innerHTML=`<div class="err">找不到 ${stockInfo.name} 的資料</div>`;
