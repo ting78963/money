@@ -1572,10 +1572,14 @@ async function fetchAnyStock(stockId){
 
   const startDate=getStartDate(); // 抓45天確保有20個交易日
   try{
-    const[priceRows,instRows]=await Promise.all([
+    const holdStart=new Date();holdStart.setMonth(holdStart.getMonth()-3);
+    const holdStartStr=holdStart.toISOString().slice(0,10);
+    const[priceRows,instRows,holdRows]=await Promise.all([
       fmFetch('TaiwanStockPrice',stockId,startDate),
-      fmFetch('TaiwanStockInstitutionalInvestorsBuySell',stockId,startDate)
+      fmFetch('TaiwanStockInstitutionalInvestorsBuySell',stockId,startDate),
+      fmFetch('TaiwanStockHoldingSharesPer',stockId,holdStartStr)
     ]);
+    const holdData=holdRows||[];
 
     if(!priceRows||priceRows.length===0){
       el.innerHTML=`<div class="err">找不到股票代號「${stockId}」，請確認代號是否正確</div>`;
