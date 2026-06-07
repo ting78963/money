@@ -110,9 +110,9 @@ body{padding-bottom:80px}
 .pos-btn.analyze{background:var(--bbg);border-color:var(--bbr);color:var(--blue)}
 
 /* 持倉柱量圖 */
-.pos-chart{background:var(--bg2);border-radius:var(--rs);padding:10px;margin-bottom:10px}
+.pos-chart{background:var(--bg2);border-radius:var(--rs);padding:10px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .pos-chart-title{font-size:var(--fs-xs);color:var(--text3);margin-bottom:8px}
-.pos-bars{display:flex;gap:2px;align-items:flex-end;height:50px}
+.pos-bars{display:flex;gap:8px;align-items:flex-end;height:160px;min-width:max-content}
 .pos-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px}
 .pos-bar{width:100%;border-radius:2px 2px 0 0;min-height:2px}
 
@@ -752,15 +752,17 @@ async function renderPositions() {
     // 柱狀圖
     const maxV = Math.max(...bars.map(b=>Math.max(Math.abs(b.foreignBuy||0),Math.abs(b.trustBuy||0))),1);
     const barsHtml = bars.map(b=>{
-      const fH = Math.max(Math.round(Math.abs(b.foreignBuy||0)/maxV*44),2);
-      const tH = Math.max(Math.round(Math.abs(b.trustBuy||0)/maxV*44),2);
-      const fC = (b.foreignBuy||0)>=0?'var(--red)':'var(--green)';
-      const tC = (b.trustBuy||0)>=0?'var(--red)':'var(--green)';
-      return`<div class="pos-bar-wrap">
-        <div style="display:flex;gap:1px;align-items:flex-end;height:44px">
-          <div class="pos-bar" style="height:${fH}px;background:${fC};width:6px"></div>
-          <div class="pos-bar" style="height:${tH}px;background:${tC};width:6px;opacity:.5"></div>
+      const fH = Math.max(Math.round(Math.abs(b.foreignBuy||0)/maxV*150),4);
+      const tH = Math.max(Math.round(Math.abs(b.trustBuy||0)/maxV*150),4);
+      const fC = (b.foreignBuy||0)>=0?'#e05a5a':'#5ab8a0';
+      const tC = (b.trustBuy||0)>=0?'#a83030':'#2d7a60';
+      const dateLabel = b.date?b.date.slice(5):'';
+      return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+        <div style="display:flex;gap:3px;align-items:flex-end;height:150px">
+          <div style="width:14px;height:${fH}px;background:${fC};border-radius:3px 3px 0 0;align-self:flex-end"></div>
+          <div style="width:14px;height:${tH}px;background:${tC};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
         </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;white-space:nowrap">${dateLabel}</div>
       </div>`;
     }).join('');
 
@@ -827,8 +829,10 @@ async function renderPositions() {
         </div>
       </div>
       ${barsHtml?`<div class="pos-chart">
-        <div class="pos-chart-title">10日法人動向｜左=外資　右=投信（淡）</div>
-        <div class="pos-bars">${barsHtml}</div>
+        <div class="pos-chart-title">10日法人動向｜🔴外資　🟤投信</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
+        </div>
       </div>`:''}
       <div class="pos-actions">
         <button class="pos-btn analyze" onclick="goAnalyze('${p.sym}')">🔍 強勢選股分析</button>
@@ -1414,41 +1418,37 @@ function showDetail(groupId){
   });
   html+=`</div>`;
 
-  // 20日三柱圖
-  const maxVol=Math.max(...g.hist.map(h=>h.totalVol),1);
-  const maxInst=Math.max(...g.hist.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
+  // 10日三柱圖（最近10天）
+  const last10detail=g.hist.slice(-10);
+  const maxInst10=Math.max(...last10detail.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy),Math.abs(h.retailBuy||0))),1);
 
-  const barsHtml=g.hist.map(h=>{
-    const volH=Math.max(Math.round((h.totalVol/maxVol)*70),2);
-    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*70),2);
-    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*70),2);
-    const fColor=h.foreignBuy>=0?'var(--red)':'var(--green)';
-    const tColor=h.trustBuy>=0?'var(--red)':'var(--green)';
-    const rColor=h.retailBuy>=0?'var(--red)':'var(--green)';
-    const sig=getSignal(
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.foreignBuy)).streak,
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.foreignBuy)).dir,
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.trustBuy)).streak,
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.trustBuy)).dir,
-      h.retailBuy>0?1:-1,false
-    );
-    return`<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:2px">
-      <div style="display:flex;gap:1px;align-items:flex-end;height:70px">
-        <div style="width:5px;height:${fH}px;background:${fColor};border-radius:2px 2px 0 0" title="外資"></div>
-        <div style="width:5px;height:${tH}px;background:${tColor};border-radius:2px 2px 0 0" title="投信"></div>
-        <div style="width:5px;height:${Math.max(Math.round(volH*0.4),2)}px;background:${rColor};border-radius:2px 2px 0 0;opacity:.6" title="散戶"></div>
+  const barsHtml=last10detail.map(h=>{
+    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst10)*200),4);
+    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst10)*200),4);
+    const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst10)*200),4);
+    const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
+    const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
+    const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
+    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:52px">
+      <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
+        <div style="width:14px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
+        <div style="width:14px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
+        <div style="width:14px;height:${rH}px;background:${rColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.6"></div>
       </div>
-      <div style="font-size:9px;color:var(--text3);writing-mode:vertical-rl;transform:rotate(180deg);height:28px">${fmtDate(h.date)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
     </div>`;
   }).join('');
 
-  html+=`<div class="section"><div class="sec-title">📊 20日三方資金動向</div>
+  html+=`<div class="section"><div class="sec-title">📊 10日三方資金動向</div>
   <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:14px">
-    <div style="display:flex;gap:1px;align-items:flex-end;overflow-x:auto">${barsHtml}</div>
-    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
-      <span style="font-size:var(--fs-xs)">左=外資　中=投信　右=散戶</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--red)">■</span> 買超</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--green)">■</span> 賣超</span>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
+    </div>
+    <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅　賣超=綠</span>
     </div>
   </div></div>`;
 
@@ -1644,24 +1644,21 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
 
   document.getElementById('stock-search-result-title').textContent=`${stockInfo.groupIcon} ${stockInfo.group}`;
 
-  // 20日三柱圖
-  const maxInst=Math.max(...displayHist.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
-  const maxVol=Math.max(...displayHist.map(h=>h.vol),1);
+  // 10日三柱圖（最近10天）
+  const last10search=displayHist.slice(-10);
+  const maxInst=Math.max(...last10search.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
 
-  const barsHtml=displayHist.map(h=>{
-    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*70),2);
-    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*70),2);
-    const volH=Math.max(Math.round((h.vol/maxVol)*70),2);
-    const fColor=h.foreignBuy>=0?'var(--red)':'var(--green)';
-    const tColor=h.trustBuy>=0?'var(--red)':'var(--green)';
-    const rColor=h.changePct>=0?'var(--red)':'var(--green)';
-    return`<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;margin-right:3px">
-      <div style="display:flex;gap:2px;align-items:flex-end;height:70px">
-        <div style="width:6px;height:${fH}px;background:${fColor};border-radius:2px 2px 0 0"></div>
-        <div style="width:6px;height:${tH}px;background:${tColor};border-radius:2px 2px 0 0"></div>
-        <div style="width:6px;height:${Math.max(Math.round(volH*0.5),2)}px;background:${rColor};border-radius:2px 2px 0 0;opacity:.5"></div>
+  const barsHtml=last10search.map(h=>{
+    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*200),4);
+    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*200),4);
+    const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
+    const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
+    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:52px">
+      <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
+        <div style="width:14px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
+        <div style="width:14px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
       </div>
-      <div style="font-size:9px;color:var(--text3);writing-mode:vertical-rl;transform:rotate(180deg);height:28px">${fmtDate(h.date)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
     </div>`;
   }).join('');
 
@@ -1700,12 +1697,14 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
   </div>
 
   <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px">
-    <div style="font-size:var(--fs-sm);font-weight:600;color:var(--text3);margin-bottom:10px">📊 20日三方資金動向</div>
-    <div style="display:flex;gap:1px;align-items:flex-end;overflow-x:auto">${barsHtml}</div>
-    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
-      <span style="font-size:var(--fs-xs)">左=外資　中=投信　右=散戶</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--red)">■</span> 買超</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--green)">■</span> 賣超</span>
+    <div style="font-size:var(--fs-sm);font-weight:600;color:var(--text3);margin-bottom:10px">📊 10日三方資金動向</div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
+    </div>
+    <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅　賣超=綠</span>
     </div>
   </div>
 
