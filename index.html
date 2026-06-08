@@ -1655,8 +1655,6 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
 
   // 大戶：計算每週持股比例，找對應日期的變化
   const holdDates=[...new Set(holdRows.map(r=>r.date))].sort();
-  const bigDiffsForMax=holdDates.map((d,i)=>i>0?Math.abs(getBigPct(d)-getBigPct(holdDates[i-1])):0);
-  const maxBigDiff=Math.max(...bigDiffsForMax,0.01);
   const BIG=['1,000-5,000','5,001-10,000','10,001-15,000','15,001-20,000'];
   const getBigPct=(date)=>{
     const rows=holdRows.filter(r=>r.date===date&&BIG.some(b=>r.HoldingSharesLevel&&r.HoldingSharesLevel.startsWith(b.split('-')[0].replace(',',''))));
@@ -1674,8 +1672,8 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
     const nearDate=holdDates.filter(d=>d<=h.date).slice(-1)[0];
     const prevDate=nearDate?holdDates[holdDates.indexOf(nearDate)-1]:null;
     const bigDiff=nearDate&&prevDate?getBigPct(nearDate)-getBigPct(prevDate):0;
-    const bigH=bigDiff!==0?Math.max(Math.round((Math.abs(bigDiff)/maxBigDiff)*200),8):0;
-    const bigColor=bigDiff>=0?'#e05a5a':'#5ab8a0';
+    const bigH=Math.max(Math.round(Math.abs(bigDiff)*5),4);
+    const bigColor=bigDiff>=0?'#f5a623':'#4a90d9';
     return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:64px">
       <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
         <div style="width:12px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
