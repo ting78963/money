@@ -969,12 +969,12 @@ async function fmFetch(dataset,stockId,startDate){
 }
 
 // 解析三大法人資料（正確欄位名稱）
-function parseInst(rows,date,closePrice=1){
+function parseInst(rows,date,closePrice=null){
   let foreignBuy=0,trustBuy=0;
   (rows||[]).filter(r=>r.date===date).forEach(r=>{
-    // 張數 × 股價 / 10000 = 萬元
-    const shares=(parseInt(r.buy||0)-parseInt(r.sell||0));
-    const net=shares*closePrice/10000;
+    const shares=(parseInt(r.buy||0)-parseInt(r.sell||0))/1000; // 張數
+    // 有股價才換算成萬元，否則用張數
+    const net=closePrice?shares*closePrice/10:shares;
     const n=r.name||'';
     const isForeign = n==='Foreign_Investor'||n.includes('外資')||n.includes('Foreign');
     const isTrust   = n==='Investment_Trust'||n.includes('投信')||n.includes('Trust');
@@ -1655,23 +1655,18 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
 
   // 大戶：集保持股1000張以上的合計比例
   const holdDates=[...new Set(holdRows.map(r=>r.date))].sort();
-  console.log('holdDates:', holdDates);
-  console.log('holdRows sample:', holdRows.slice(0,5).map(r=>({date:r.date,lvl:r.HoldingSharesLevel,pct:r.percent})));
   const getBigPct=(date)=>{
     const rows=holdRows.filter(r=>r.date===date);
-    console.log('date:', date, 'rows:', rows.map(r=>({lvl:r.HoldingSharesLevel,pct:r.percent})));
-    const big=rows.filter(r=>{
+      const big=rows.filter(r=>{
       const lvl=r.HoldingSharesLevel||'';
       return lvl!==''&&!lvl.includes('1-999')&&!lvl.toLowerCase().includes('total');
     });
     const pct=big.reduce((a,r)=>a+parseFloat(r.percent||0),0);
-    console.log('bigPct for', date, '=', pct);
-    return pct;
+      return pct;
   };
 
   // 大戶變化的最大值（自己標準化）
   const bigDiffs=holdDates.map((d,i)=>i>0?getBigPct(d)-getBigPct(holdDates[i-1]):0);
-  console.log('bigDiffs:', bigDiffs);
   const maxBigDiff=Math.max(...bigDiffs.map(Math.abs),0.01);
 
   const barsHtml=last15search.map(h=>{
