@@ -1686,7 +1686,7 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
     const nearDate=holdDates.filter(d=>d<=h.date).slice(-1)[0];
     const prevDate=nearDate?holdDates[holdDates.indexOf(nearDate)-1]:null;
     const bigDiff=nearDate&&prevDate?getBigPct(nearDate)-getBigPct(prevDate):0;
-    const bigH=Math.round((Math.abs(bigDiff)/maxBigDiff)*200);
+    const bigH=bigDiff!==0?Math.max(Math.round((Math.abs(bigDiff)/maxBigDiff)*200),8):0;
     const bigColor=bigDiff>=0?'#e05a5a':'#5ab8a0';
     return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:60px">
       <div style="display:flex;gap:2px;align-items:flex-end;height:200px">
