@@ -1446,9 +1446,10 @@ function showDetail(groupId){
     </div>
     <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
       <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#f5a623">■</span> 大戶</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
-      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅　賣超=綠</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅/橘　賣超=綠/藍</span>
     </div>
   </div></div>`;
 
@@ -1572,9 +1573,12 @@ async function fetchAnyStock(stockId){
 
   const startDate=getStartDate(); // 抓45天確保有20個交易日
   try{
-    const[priceRows,instRows]=await Promise.all([
+    const holdStart=new Date();holdStart.setMonth(holdStart.getMonth()-2);
+    const holdStartStr=holdStart.toISOString().slice(0,10);
+    const[priceRows,instRows,holdRows]=await Promise.all([
       fmFetch('TaiwanStockPrice',stockId,startDate),
-      fmFetch('TaiwanStockInstitutionalInvestorsBuySell',stockId,startDate)
+      fmFetch('TaiwanStockInstitutionalInvestorsBuySell',stockId,startDate),
+      fmFetch('TaiwanStockHoldingSharesPer',stockId,holdStartStr)
     ]);
 
     if(!priceRows||priceRows.length===0){
@@ -1601,13 +1605,14 @@ async function fetchAnyStock(stockId){
 
     const stockInfo={id:stockId,name:stockName,group:'自選股',groupIcon:'🔎'};
     document.getElementById('stock-search-result-title').textContent='🔎 自選股查詢';
-    renderStockDetail(stockInfo,priceRows,instRows,tradingDays);
+    renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows||[]);
   }catch(e){
     el.innerHTML=`<div class="err">抓取失敗：${e.message}</div>`;
   }
 }
 
-function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
+function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
+  holdRows=holdRows||[];
 
   if(!priceRows||priceRows.length===0){
     document.getElementById('stock-search-content').innerHTML=`<div class="err">找不到 ${stockInfo.name} 的資料</div>`;
@@ -1648,6 +1653,14 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
   const last10search=displayHist.slice(-10);
   const maxInst=Math.max(...last10search.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
 
+  // 大戶：計算每週持股比例，找對應日期的變化
+  const holdDates=[...new Set(holdRows.map(r=>r.date))].sort();
+  const BIG=['1,000-5,000','5,001-10,000','10,001-15,000','15,001-20,000'];
+  const getBigPct=(date)=>{
+    const rows=holdRows.filter(r=>r.date===date&&BIG.some(b=>r.HoldingSharesLevel&&r.HoldingSharesLevel.startsWith(b.split('-')[0].replace(',',''))));
+    return rows.reduce((a,r)=>a+parseFloat(r.percent||0),0);
+  };
+
   const barsHtml=last10search.map(h=>{
     const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*200),4);
     const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*200),4);
@@ -1655,11 +1668,18 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
     const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
     const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
     const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
-    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:52px">
+    // 找最近的大戶週資料（找<=當日最近的週資料）
+    const nearDate=holdDates.filter(d=>d<=h.date).slice(-1)[0];
+    const prevDate=nearDate?holdDates[holdDates.indexOf(nearDate)-1]:null;
+    const bigDiff=nearDate&&prevDate?getBigPct(nearDate)-getBigPct(prevDate):0;
+    const bigH=Math.max(Math.round(Math.abs(bigDiff)*5),4);
+    const bigColor=bigDiff>=0?'#f5a623':'#4a90d9';
+    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:64px">
       <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
-        <div style="width:14px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
-        <div style="width:14px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
-        <div style="width:14px;height:${rH}px;background:${rColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.6"></div>
+        <div style="width:12px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
+        <div style="width:12px;height:${bigH}px;background:${bigColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.9" title="大戶${bigDiff>=0?'+':''}${bigDiff.toFixed(2)}%"></div>
+        <div style="width:12px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
+        <div style="width:12px;height:${rH}px;background:${rColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.6"></div>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
     </div>`;
@@ -1706,11 +1726,13 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays){
     </div>
     <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
       <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#f5a623">■</span> 大戶</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
-      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅　賣超=綠</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅/橘　賣超=綠/藍</span>
     </div>
   </div>
+
 
   <a href="${SCREENER_URL}?stock=${sid}" target="_blank"
     style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--accent);border-radius:var(--r);text-decoration:none;cursor:pointer;margin-bottom:10px">
