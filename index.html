@@ -1655,17 +1655,23 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
 
   // 大戶：集保持股1000張以上的合計比例
   const holdDates=[...new Set(holdRows.map(r=>r.date))].sort();
+  console.log('holdDates:', holdDates);
+  console.log('holdRows sample:', holdRows.slice(0,5).map(r=>({date:r.date,lvl:r.HoldingSharesLevel,pct:r.percent})));
   const getBigPct=(date)=>{
-    const rows=holdRows.filter(r=>{
-      if(r.date!==date) return false;
+    const rows=holdRows.filter(r=>r.date===date);
+    console.log('date:', date, 'rows:', rows.map(r=>({lvl:r.HoldingSharesLevel,pct:r.percent})));
+    const big=rows.filter(r=>{
       const lvl=r.HoldingSharesLevel||'';
-      return lvl!==''&&!lvl.includes('1-999')&&!lvl.includes('total')&&!lvl.includes('Total');
+      return lvl!==''&&!lvl.includes('1-999')&&!lvl.toLowerCase().includes('total');
     });
-    return rows.reduce((a,r)=>a+parseFloat(r.percent||0),0);
+    const pct=big.reduce((a,r)=>a+parseFloat(r.percent||0),0);
+    console.log('bigPct for', date, '=', pct);
+    return pct;
   };
 
   // 大戶變化的最大值（自己標準化）
   const bigDiffs=holdDates.map((d,i)=>i>0?getBigPct(d)-getBigPct(holdDates[i-1]):0);
+  console.log('bigDiffs:', bigDiffs);
   const maxBigDiff=Math.max(...bigDiffs.map(Math.abs),0.01);
 
   const barsHtml=last15search.map(h=>{
@@ -1680,7 +1686,7 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
     const nearDate=holdDates.filter(d=>d<=h.date).slice(-1)[0];
     const prevDate=nearDate?holdDates[holdDates.indexOf(nearDate)-1]:null;
     const bigDiff=nearDate&&prevDate?getBigPct(nearDate)-getBigPct(prevDate):0;
-    const bigH=Math.max(Math.round((Math.abs(bigDiff)/maxBigDiff)*200),4);
+    const bigH=Math.round((Math.abs(bigDiff)/maxBigDiff)*200);
     const bigColor=bigDiff>=0?'#e05a5a':'#5ab8a0';
     return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:60px">
       <div style="display:flex;gap:2px;align-items:flex-end;height:200px">
