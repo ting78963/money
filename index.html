@@ -1439,17 +1439,17 @@ function showDetail(groupId){
     </div>`;
   }).join('');
 
-  html+=`<div class="section"><div class="sec-title">📊 10日三方資金動向</div>
+  html+=`<div class="section"><div class="sec-title">📊 15日三方資金動向</div>
   <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:14px">
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
       <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
     </div>
     <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
-      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:#f5a623">■</span> 大戶</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#c94040">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 大戶</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
-      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅/橘　賣超=綠/藍</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅　賣超=綠</span>
     </div>
   </div></div>`;
 
@@ -1650,39 +1650,42 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
   document.getElementById('stock-search-result-title').textContent=`${stockInfo.groupIcon} ${stockInfo.group}`;
 
   // 10日三柱圖（最近10天）
-  const last10search=displayHist.slice(-10);
-  const maxInst=Math.max(...last10search.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
+  const last15search=displayHist.slice(-15);
+  const maxInst=Math.max(...last15search.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
 
   // 大戶：集保持股1000張以上的合計比例
   const holdDates=[...new Set(holdRows.map(r=>r.date))].sort();
-  console.log('holdRows:', holdRows.length, holdRows.slice(0,3));
   const getBigPct=(date)=>{
     const rows=holdRows.filter(r=>{
       if(r.date!==date) return false;
       const lvl=r.HoldingSharesLevel||'';
-      // 排除散戶(1-999)和total，其餘都是大戶
       return lvl!==''&&!lvl.includes('1-999')&&!lvl.includes('total')&&!lvl.includes('Total');
     });
     return rows.reduce((a,r)=>a+parseFloat(r.percent||0),0);
   };
 
-  const barsHtml=last10search.map(h=>{
+  // 大戶變化的最大值（自己標準化）
+  const bigDiffs=holdDates.map((d,i)=>i>0?getBigPct(d)-getBigPct(holdDates[i-1]):0);
+  const maxBigDiff=Math.max(...bigDiffs.map(Math.abs),0.01);
+
+  const barsHtml=last15search.map(h=>{
     const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*200),4);
     const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*200),4);
     const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst)*200),4);
-    const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
+    // 顏色：外資深紅、大戶亮紅、投信暗紅、散戶淺紅
+    const fColor=h.foreignBuy>=0?'#c94040':'#3d9e80';
     const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
     const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
-    // 找最近的大戶週資料（找<=當日最近的週資料）
+    // 大戶：找<=當日最近的週資料
     const nearDate=holdDates.filter(d=>d<=h.date).slice(-1)[0];
     const prevDate=nearDate?holdDates[holdDates.indexOf(nearDate)-1]:null;
     const bigDiff=nearDate&&prevDate?getBigPct(nearDate)-getBigPct(prevDate):0;
-    const bigH=Math.max(Math.round(Math.abs(bigDiff)*5),4);
-    const bigColor=bigDiff>=0?'#f5a623':'#4a90d9';
-    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:64px">
-      <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
+    const bigH=Math.max(Math.round((Math.abs(bigDiff)/maxBigDiff)*200),4);
+    const bigColor=bigDiff>=0?'#e05a5a':'#5ab8a0';
+    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:60px">
+      <div style="display:flex;gap:2px;align-items:flex-end;height:200px">
         <div style="width:12px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
-        <div style="width:12px;height:${bigH}px;background:${bigColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.9" title="大戶${bigDiff>=0?'+':''}${bigDiff.toFixed(2)}%"></div>
+        <div style="width:12px;height:${bigH}px;background:${bigColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
         <div style="width:12px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
         <div style="width:12px;height:${rH}px;background:${rColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.6"></div>
       </div>
@@ -1725,16 +1728,16 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
   </div>
 
   <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px">
-    <div style="font-size:var(--fs-sm);font-weight:600;color:var(--text3);margin-bottom:10px">📊 10日三方資金動向</div>
+    <div style="font-size:var(--fs-sm);font-weight:600;color:var(--text3);margin-bottom:10px">📊 15日三方資金動向</div>
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
       <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
     </div>
     <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
-      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:#f5a623">■</span> 大戶</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#c94040">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 大戶</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
       <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
-      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅/橘　賣超=綠/藍</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅　賣超=綠</span>
     </div>
   </div>
 
