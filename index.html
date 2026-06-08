@@ -1653,11 +1653,16 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
   const last10search=displayHist.slice(-10);
   const maxInst=Math.max(...last10search.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
 
-  // 大戶：計算每週持股比例，找對應日期的變化
+  // 大戶：集保持股1000張以上的合計比例
   const holdDates=[...new Set(holdRows.map(r=>r.date))].sort();
-  const BIG=['1,000-5,000','5,001-10,000','10,001-15,000','15,001-20,000'];
+  console.log('holdRows:', holdRows.length, holdRows.slice(0,3));
   const getBigPct=(date)=>{
-    const rows=holdRows.filter(r=>r.date===date&&BIG.some(b=>r.HoldingSharesLevel&&r.HoldingSharesLevel.startsWith(b.split('-')[0].replace(',',''))));
+    const rows=holdRows.filter(r=>{
+      if(r.date!==date) return false;
+      const lvl=r.HoldingSharesLevel||'';
+      // 排除散戶(1-999)和total，其餘都是大戶
+      return lvl!==''&&!lvl.includes('1-999')&&!lvl.includes('total')&&!lvl.includes('Total');
+    });
     return rows.reduce((a,r)=>a+parseFloat(r.percent||0),0);
   };
 
