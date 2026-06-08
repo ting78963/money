@@ -110,9 +110,9 @@ body{padding-bottom:80px}
 .pos-btn.analyze{background:var(--bbg);border-color:var(--bbr);color:var(--blue)}
 
 /* 持倉柱量圖 */
-.pos-chart{background:var(--bg2);border-radius:var(--rs);padding:10px;margin-bottom:10px}
+.pos-chart{background:var(--bg2);border-radius:var(--rs);padding:10px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .pos-chart-title{font-size:var(--fs-xs);color:var(--text3);margin-bottom:8px}
-.pos-bars{display:flex;gap:2px;align-items:flex-end;height:50px}
+.pos-bars{display:flex;gap:8px;align-items:flex-end;height:160px;min-width:max-content}
 .pos-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px}
 .pos-bar{width:100%;border-radius:2px 2px 0 0;min-height:2px}
 
@@ -140,15 +140,19 @@ body{padding-bottom:80px}
 
 /* 三柱圖 */
 .tri-chart-wrap{margin-bottom:8px}
-.tri-chart{display:flex;gap:2px;align-items:flex-end;height:64px}
-.day-col{display:flex;gap:1px;align-items:flex-end;flex:1}
-.bar{border-radius:2px 2px 0 0;min-height:2px}
-.bar-foreign{flex:1}
-.bar-trust{flex:1}
-.bar-retail{flex:1;opacity:.6}
-.chart-dates-row{display:flex;margin-top:3px}
-.chart-date-cell{flex:1;font-size:9px;color:var(--text3);text-align:center;overflow:hidden}
-.chart-legend{display:flex;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.tri-chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.tri-chart-scroll::-webkit-scrollbar{height:3px}
+.tri-chart-scroll::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+.tri-chart{display:flex;gap:10px;align-items:flex-end;height:240px;min-width:max-content;padding:0 8px}
+.day-col{display:flex;flex-direction:column;align-items:center;width:52px;flex-shrink:0}
+.day-bars{display:flex;gap:3px;align-items:flex-end;width:100%;height:220px}
+.bar{border-radius:2px 2px 0 0;width:10px;min-height:2px}
+.bar-foreign{}
+.bar-trust{}
+.bar-retail{opacity:.6}
+.chart-dates-row{display:flex;margin-top:4px;min-width:max-content}
+.chart-date-cell{width:36px;font-size:10px;color:var(--text3);text-align:center;flex-shrink:0}
+.chart-legend{display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap}
 .chart-legend span{font-size:var(--fs-xs);color:var(--text2)}
 
 /* 連續天數顯示 */
@@ -285,11 +289,19 @@ body{padding-bottom:80px}
         </div>
         <div style="padding:10px 12px;background:var(--rbg);border:0.5px solid var(--rbr);border-radius:var(--rs)">
           <div style="font-size:var(--fs-sm);font-weight:700;color:var(--red);margin-bottom:4px">🔴 建議續抱</div>
-          <div style="font-size:var(--fs-xs);color:var(--text2);line-height:1.6">外資持續買超<br>股價站上5日線與10日線</div>
+          <div style="font-size:var(--fs-xs);color:var(--text2);line-height:1.6">外資連續2天有意義買超（標準化分數&gt;0.3）</div>
         </div>
         <div style="padding:10px 12px;background:var(--rbg);border:0.5px solid var(--rbr);border-radius:var(--rs)">
           <div style="font-size:var(--fs-sm);font-weight:700;color:var(--red);margin-bottom:4px">🔴 加碼機會</div>
-          <div style="font-size:var(--fs-xs);color:var(--text2);line-height:1.6">外資明顯買超（≥1.5倍）+ 投信也買<br>+ 站上5日/10日線 + 收紅K+量放大<br>+ 持倉天數 &lt; 15天（五個條件同時成立）</div>
+          <div style="font-size:var(--fs-xs);color:var(--text2);line-height:1.6">外資+投信同時連續3天有意義買超</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--rs)">
+          <div style="font-size:var(--fs-sm);font-weight:700;color:var(--text2);margin-bottom:4px">⚪ 中性觀察</div>
+          <div style="font-size:var(--fs-xs);color:var(--text2);line-height:1.6">買賣超幅度不顯著，觀察為主</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg3);border:0.5px solid var(--abr);border-radius:var(--rs)">
+          <div style="font-size:var(--fs-sm);font-weight:700;color:var(--amber);margin-bottom:4px">🟡 投信布局，留意觀察</div>
+          <div style="font-size:var(--fs-xs);color:var(--text2);line-height:1.6">投信連續3天買超但外資未確認，需謹慎</div>
         </div>
       </div>
     </div>
@@ -346,14 +358,28 @@ body{padding-bottom:80px}
       </div>
     </div>
 
+    <!-- 族群訊號說明 -->
+    <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px">
+      <div style="font-size:var(--fs-md);font-weight:700;margin-bottom:10px">📊 族群訊號說明</div>
+      <div style="font-size:var(--fs-sm);color:var(--text2);line-height:1.7">
+        族群買賣超採用<strong style="color:var(--text)">標準化分數</strong>，讓台積電與群創等不同市值的股票能公平比較。<br><br>
+        <strong style="color:var(--text)">計算方式：</strong><br>
+        每支股票 = 今日買賣超金額 ÷ 過去10日平均買賣超金額<br>
+        族群分數 = 族群內所有股票的平均標準化分數<br><br>
+        <strong style="color:var(--text)">訊號門檻：</strong><br>
+        分數 > 0.3 才算有意義的買超（過濾雜訊）<br>
+        分數 < -0.3 才算有意義的賣超
+      </div>
+    </div>
+
     <!-- 法人基準說明 -->
     <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px">
-      <div style="font-size:var(--fs-md);font-weight:700;margin-bottom:10px">📏 外資基準說明</div>
+      <div style="font-size:var(--fs-md);font-weight:700;margin-bottom:10px">📏 個股外資基準說明</div>
       <div style="font-size:var(--fs-sm);color:var(--text2);line-height:1.7">
-        每支股票的「基準」是過去10日外資買賣超的平均絕對值。<br><br>
-        例如：過去10日外資平均每天買賣 200張<br>
-        今天賣超 300張 = 1.5倍基準 → 明顯賣超<br>
-        今天賣超 600張 = 3倍基準 → 爆量賣超（緊急）
+        個股持倉的「基準」是過去10日外資買賣超金額的平均絕對值。<br><br>
+        例如：過去10日外資平均每天買賣 500萬元<br>
+        今天賣超 750萬元 = 1.5倍基準 → 明顯賣超<br>
+        今天賣超 1,500萬元 = 3倍基準 → 爆量賣超（緊急）
       </div>
     </div>
 
@@ -444,7 +470,7 @@ body{padding-bottom:80px}
 
 <script>
 const FM_TOKEN='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiSGFtaWx0b25XYW5nIiwiZW1haWwiOiJ0aW5nNzg5NjNAZ21haWwuY29tIiwidG9rZW5fdmVyc2lvbiI6MH0.l67zXvqwdLQbdUqPBJGDokFU-zAgrnmlvM-r41Zt9yA';
-const SCREENER_URL='https://super-monstera-75918d.netlify.app';
+const SCREENER_URL='https://ting78963.github.io/stock';
 
 // ── 字體控制 ──
 const FONT_CLASSES = ['font-lg','font-xl','font-2xl'];
@@ -726,15 +752,17 @@ async function renderPositions() {
     // 柱狀圖
     const maxV = Math.max(...bars.map(b=>Math.max(Math.abs(b.foreignBuy||0),Math.abs(b.trustBuy||0))),1);
     const barsHtml = bars.map(b=>{
-      const fH = Math.max(Math.round(Math.abs(b.foreignBuy||0)/maxV*44),2);
-      const tH = Math.max(Math.round(Math.abs(b.trustBuy||0)/maxV*44),2);
-      const fC = (b.foreignBuy||0)>=0?'var(--red)':'var(--green)';
-      const tC = (b.trustBuy||0)>=0?'var(--red)':'var(--green)';
-      return`<div class="pos-bar-wrap">
-        <div style="display:flex;gap:1px;align-items:flex-end;height:44px">
-          <div class="pos-bar" style="height:${fH}px;background:${fC};width:6px"></div>
-          <div class="pos-bar" style="height:${tH}px;background:${tC};width:6px;opacity:.5"></div>
+      const fH = Math.max(Math.round(Math.abs(b.foreignBuy||0)/maxV*150),4);
+      const tH = Math.max(Math.round(Math.abs(b.trustBuy||0)/maxV*150),4);
+      const fC = (b.foreignBuy||0)>=0?'#e05a5a':'#5ab8a0';
+      const tC = (b.trustBuy||0)>=0?'#a83030':'#2d7a60';
+      const dateLabel = b.date?b.date.slice(5):'';
+      return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+        <div style="display:flex;gap:3px;align-items:flex-end;height:150px">
+          <div style="width:14px;height:${fH}px;background:${fC};border-radius:3px 3px 0 0;align-self:flex-end"></div>
+          <div style="width:14px;height:${tH}px;background:${tC};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
         </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;white-space:nowrap">${dateLabel}</div>
       </div>`;
     }).join('');
 
@@ -801,8 +829,10 @@ async function renderPositions() {
         </div>
       </div>
       ${barsHtml?`<div class="pos-chart">
-        <div class="pos-chart-title">10日法人動向｜左=外資　右=投信（淡）</div>
-        <div class="pos-bars">${barsHtml}</div>
+        <div class="pos-chart-title">10日法人動向｜🔴外資　🟤投信</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
+        </div>
       </div>`:''}
       <div class="pos-actions">
         <button class="pos-btn analyze" onclick="goAnalyze('${p.sym}')">🔍 強勢選股分析</button>
@@ -939,10 +969,12 @@ async function fmFetch(dataset,stockId,startDate){
 }
 
 // 解析三大法人資料（正確欄位名稱）
-function parseInst(rows,date){
+function parseInst(rows,date,closePrice=1){
   let foreignBuy=0,trustBuy=0;
   (rows||[]).filter(r=>r.date===date).forEach(r=>{
-    const net=(parseInt(r.buy||0)-parseInt(r.sell||0))/1000;
+    // 張數 × 股價 / 10000 = 萬元
+    const shares=(parseInt(r.buy||0)-parseInt(r.sell||0));
+    const net=shares*closePrice/10000;
     const n=r.name||'';
     const isForeign = n==='Foreign_Investor'||n.includes('外資')||n.includes('Foreign');
     const isTrust   = n==='Investment_Trust'||n.includes('投信')||n.includes('Trust');
@@ -959,37 +991,39 @@ function getTradingDays(allPrice,n=20){
 }
 
 // 計算連續買超/賣超天數
-function calcStreak(dailyValues){
+function calcStreak(dailyValues,threshold=0.3){
+  // threshold：標準化分數需超過此門檻才算有意義的買賣超
   if(!dailyValues||dailyValues.length===0)return{streak:0,dir:0};
   const last=dailyValues[dailyValues.length-1];
-  const dir=last>0?1:last<0?-1:0;
+  const dir=last>threshold?1:last<-threshold?-1:0;
   if(dir===0)return{streak:0,dir:0};
   let streak=0;
   for(let i=dailyValues.length-1;i>=0;i--){
-    if(dir===1&&dailyValues[i]>0)streak++;
-    else if(dir===-1&&dailyValues[i]<0)streak++;
+    if(dir===1&&dailyValues[i]>threshold)streak++;
+    else if(dir===-1&&dailyValues[i]<-threshold)streak++;
     else break;
   }
   return{streak,dir};
 }
 
-// 判斷訊號（基於外資+投信連續天數）
+// 判斷訊號（基於標準化分數的連續天數，>0.3才算有意義）
 function getSignal(foreignStreak,foreignDir,trustStreak,trustDir,retailDir,isSingleDayBlast){
-  // 緊急：單日爆量賣超
+  // 緊急：單日爆量賣超（標準化分數<-2，代表是平常的2倍賣超）
   if(isSingleDayBlast&&foreignDir<0)return{text:'🟢 緊急全出',cls:'sig-urgent'};
-  // 全出：外資+投信連續3天賣超
-  if(foreignDir<0&&foreignStreak>=3&&trustDir<0)return{text:`🟢 建議全出`,cls:'sig-exit'};
-  // 減碼：外資連續2天賣超
-  if(foreignDir<0&&foreignStreak>=2)return{text:`🟠 建議減碼`,cls:'sig-warn2'};
+  // 全出：外資+投信連續3天有意義賣超
+  if(foreignDir<0&&foreignStreak>=3&&trustDir<0)return{text:'🟢 建議全出',cls:'sig-exit'};
+  // 減碼：外資連續2天有意義賣超
+  if(foreignDir<0&&foreignStreak>=2)return{text:'🟠 建議減碼',cls:'sig-warn2'};
   // 留意：外資開始賣超第1天
   if(foreignDir<0&&foreignStreak===1)return{text:'🟡 留意觀察',cls:'sig-warn1'};
-  // 加碼：外資+投信連續3天買超
-  if(foreignDir>0&&foreignStreak>=3&&trustDir>0&&trustStreak>=3)return{text:`🔴 加碼機會`,cls:'sig-strong'};
-  // 續抱：外資連續買超
-  if(foreignDir>0&&foreignStreak>=2)return{text:`🔴 建議續抱`,cls:'sig-strong'};
-  // 投信布局
-  if(trustDir>0&&trustStreak>=3)return{text:`🔴 建議續抱`,cls:'sig-strong'};
-  return{text:'🔴 建議續抱',cls:'sig-strong'};
+  // 加碼：外資+投信連續3天有意義買超
+  if(foreignDir>0&&foreignStreak>=3&&trustDir>0&&trustStreak>=3)return{text:'🔴 加碼機會',cls:'sig-strong'};
+  // 續抱：外資連續2天有意義買超
+  if(foreignDir>0&&foreignStreak>=2)return{text:'🔴 建議續抱',cls:'sig-strong'};
+  // 投信連續3天買超（外資未確認，降級為留意）
+  if(trustDir>0&&trustStreak>=3)return{text:'🟡 投信布局，留意觀察',cls:'sig-warn1'};
+  // 預設：中性
+  return{text:'⚪ 中性觀察',cls:'sig-neutral'};
 }
 
 // 族群輪動：找出外資連續買超最多天的族群
@@ -1012,18 +1046,40 @@ function getTopRotation(groups, allInst, tradingDays) {
 }
 
 // 計算某族群在某天的三方買賣超
-function calcGroupInst(group,allInst,date){
-  let foreignBuy=0,trustBuy=0;
-  group.stocks.forEach(id=>{
-    const{foreignBuy:f,trustBuy:t}=parseInst(allInst[id]||[],date);
-    foreignBuy+=f;trustBuy+=t;
-  });
-  return{foreignBuy,trustBuy};
+function getStockBaseline(instRows,pricRows,dates){
+  // 計算過去10日每日外資買賣超金額的平均絕對值
+  return dates.map(d=>{
+    const pRow=(pricRows||[]).find(r=>r.date===d);
+    const close=pRow?parseFloat(pRow.close)||1:1;
+    return Math.abs(parseInst(instRows,d,close).foreignBuy);
+  }).reduce((a,b)=>a+b,0)/Math.max(dates.length,1);
 }
 
-function calcGroupDay(group,allPrice,allInst,date){
+function calcGroupInst(group,allInst,allPrice,date,tradingDays){
+  // 方案二：每支股票標準化後加總
+  let fScore=0,tScore=0,count=0;
+  const last10=tradingDays.slice(-10);
+  group.stocks.forEach(id=>{
+    const pRow=(allPrice[id]||[]).find(r=>r.date===date);
+    const close=pRow?parseFloat(pRow.close)||1:1;
+    const{foreignBuy:f,trustBuy:t}=parseInst(allInst[id]||[],date,close);
+    // 計算這支股票的baseline
+    const baseline=getStockBaseline(allInst[id]||[],allPrice[id]||[],last10);
+    if(baseline>0){
+      fScore+=f/baseline;
+      tScore+=t/baseline;
+    }
+    count++;
+  });
+  // 族群平均標準化分數
+  const foreignBuy=count>0?fScore/count:0;
+  const trustBuy=count>0?tScore/count:0;
+  return{foreignBuy,trustBuy,isNormalized:true};
+}
+
+function calcGroupDay(group,allPrice,allInst,date,tradingDays){
   let totalChange=0,totalVol=0,count=0;
-  const{foreignBuy,trustBuy}=calcGroupInst(group,allInst,date);
+  const{foreignBuy,trustBuy}=calcGroupInst(group,allInst,allPrice,date,tradingDays||[date]);
   const stocks=[];
   group.stocks.forEach(id=>{
     const pRow=(allPrice[id]||[]).find(r=>r.date===date);
@@ -1032,13 +1088,12 @@ function calcGroupDay(group,allPrice,allInst,date){
     const spread=parseFloat(pRow.spread)||0;
     const changePct=(spread/close)*100;
     const vol=parseInt(pRow.Trading_Volume||0)/1000;
-    // 個股法人
-    const{foreignBuy:stockForeign,trustBuy:stockTrust}=parseInst(allInst[id]||[],date);
+    // 個股法人（仍用張數顯示，但加入股價）
+    const{foreignBuy:stockForeign,trustBuy:stockTrust}=parseInst(allInst[id]||[],date,close);
     totalChange+=changePct;totalVol+=vol;count++;
     stocks.push({id,name:STOCK_NAMES[id]||id,changePct,vol,foreignBuy:stockForeign,trustBuy:stockTrust});
   });
-  const retailBuy=totalVol-Math.abs(foreignBuy)-Math.abs(trustBuy);
-  return{avgChange:count>0?totalChange/count:0,totalVol,foreignBuy,trustBuy,retailBuy,count,stocks:stocks.sort((a,b)=>b.vol-a.vol)};
+  return{avgChange:count>0?totalChange/count:0,totalVol,foreignBuy,trustBuy,count,stocks:stocks.sort((a,b)=>b.vol-a.vol)};
 }
 
 async function loadAllData(){
@@ -1097,7 +1152,7 @@ function renderMain(cache){
 
   // 計算每個族群每天的資料
   const groupsData=GROUPS.map(g=>{
-    const hist=tradingDays.map(date=>({date,...calcGroupDay(g,allPrice,allInst,date)}));
+    const hist=tradingDays.map(date=>({date,...calcGroupDay(g,allPrice,allInst,date,tradingDays)}));
     const todayD=hist[hist.length-1];
     const foreignDaily=hist.map(h=>h.foreignBuy);
     const trustDaily=hist.map(h=>h.trustBuy);
@@ -1230,21 +1285,25 @@ function renderMain(cache){
     const maxVol=Math.max(...last10.map(h=>h.totalVol),1);
     const maxInst=Math.max(...last10.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
 
+    const CHART_H=220;
     const barsHtml=last10.map(h=>{
-      const volH=Math.max(Math.round((h.totalVol/maxVol)*60),2);
-      const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*60),2);
-      const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*60),2);
-      const fColor=h.foreignBuy>=0?'var(--red)':'var(--green)';
-      const tColor=h.trustBuy>=0?'var(--red)':'var(--green)';
-      const rColor=h.retailBuy>=0?'var(--red)':'var(--green)';
-      return`<div class="day-col" style="margin-right:4px">
-        <div class="bar bar-foreign" style="height:${fH}px;background:${fColor}"></div>
-        <div class="bar bar-trust" style="height:${tH}px;background:${tColor}"></div>
-        <div class="bar bar-retail" style="height:${Math.max(Math.round(volH*0.4),2)}px;background:${rColor}"></div>
+      const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*CHART_H),4);
+      const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*CHART_H),4);
+      const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst)*CHART_H),4);
+      const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
+      const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
+      const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
+      return`<div class="day-col">
+        <div class="day-bars">
+          <div class="bar bar-foreign" style="height:${fH}px;width:14px;background:${fColor};align-self:flex-end;border-radius:3px 3px 0 0"></div>
+          <div class="bar bar-trust" style="height:${tH}px;width:14px;background:${tColor};align-self:flex-end;border-radius:3px 3px 0 0"></div>
+          <div class="bar bar-retail" style="height:${rH}px;width:14px;background:${rColor};align-self:flex-end;border-radius:3px 3px 0 0;opacity:.7"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
       </div>`;
     }).join('');
 
-    const dateLabels=last10.map((h,idx)=>`<div class="chart-date-cell" style="margin-right:4px">${idx%2===0?fmtDate(h.date):''}</div>`).join('');
+    const dateLabels='';
 
     // 前三名個股
     const top3=g.stocks.slice(0,3);
@@ -1281,12 +1340,15 @@ function renderMain(cache){
         <span class="signal-badge ${g.signal.cls}">${g.signal.text}</span>
       </div>
       <div class="chart-legend">
-        <span>左=外資　中=投信　右=散戶</span>
-        <span><span style="color:var(--red)">■</span>買超　<span style="color:var(--green)">■</span>賣超</span>
+        <span><span style="color:#e05a5a">■</span>外資</span>
+        <span><span style="color:#a83030">■</span>投信</span>
+        <span><span style="color:#e08080">■</span>散戶</span>
+        <span style="color:var(--text3)">買超=紅　賣超=綠</span>
       </div>
       <div class="tri-chart-wrap">
-        <div class="tri-chart">${barsHtml}</div>
-        <div class="chart-dates-row">${dateLabels}</div>
+        <div class="tri-chart-scroll">
+          <div class="tri-chart">${barsHtml}</div>
+        </div>
       </div>
       ${top3.length>0?`<div class="top-stocks">${top3Html}</div>`:''}
     </div>`;
@@ -1297,8 +1359,8 @@ function renderMain(cache){
   const records=[];
   for(let i=tradingDays.length-1;i>=1;i--){
     const d1=tradingDays[i],d2=tradingDays[i-1];
-    const g1=GROUPS.map(g=>({...g,...calcGroupDay(g,allPrice,allInst,d1)})).sort((a,b)=>b.totalVol-a.totalVol);
-    const g2=GROUPS.map(g=>({...g,...calcGroupDay(g,allPrice,allInst,d2)})).sort((a,b)=>b.totalVol-a.totalVol);
+    const g1=GROUPS.map(g=>({...g,...calcGroupDay(g,allPrice,allInst,d1,tradingDays)})).sort((a,b)=>b.totalVol-a.totalVol);
+    const g2=GROUPS.map(g=>({...g,...calcGroupDay(g,allPrice,allInst,d2,tradingDays)})).sort((a,b)=>b.totalVol-a.totalVol);
     g1.forEach((g,idx)=>{
       const prev=g2.findIndex(pg=>pg.id===g.id);
       if(prev-idx>=2)records.push({date:d1,type:'in',text:`資金流入 <strong>${g.name}</strong>（排名 ${prev+1}→${idx+1}）`});
@@ -1356,41 +1418,38 @@ function showDetail(groupId){
   });
   html+=`</div>`;
 
-  // 20日三柱圖
-  const maxVol=Math.max(...g.hist.map(h=>h.totalVol),1);
-  const maxInst=Math.max(...g.hist.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
+  // 10日三柱圖（最近10天）
+  const last10detail=g.hist.slice(-10);
+  const maxInst10=Math.max(...last10detail.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy),Math.abs(h.retailBuy||0))),1);
 
-  const barsHtml=g.hist.map(h=>{
-    const volH=Math.max(Math.round((h.totalVol/maxVol)*70),2);
-    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*70),2);
-    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*70),2);
-    const fColor=h.foreignBuy>=0?'var(--red)':'var(--green)';
-    const tColor=h.trustBuy>=0?'var(--red)':'var(--green)';
-    const rColor=h.retailBuy>=0?'var(--red)':'var(--green)';
-    const sig=getSignal(
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.foreignBuy)).streak,
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.foreignBuy)).dir,
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.trustBuy)).streak,
-      calcStreak(g.hist.slice(0,g.hist.indexOf(h)+1).map(x=>x.trustBuy)).dir,
-      h.retailBuy>0?1:-1,false
-    );
-    return`<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:2px">
-      <div style="display:flex;gap:1px;align-items:flex-end;height:70px">
-        <div style="width:5px;height:${fH}px;background:${fColor};border-radius:2px 2px 0 0" title="外資"></div>
-        <div style="width:5px;height:${tH}px;background:${tColor};border-radius:2px 2px 0 0" title="投信"></div>
-        <div style="width:5px;height:${Math.max(Math.round(volH*0.4),2)}px;background:${rColor};border-radius:2px 2px 0 0;opacity:.6" title="散戶"></div>
+  const barsHtml=last10detail.map(h=>{
+    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst10)*200),4);
+    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst10)*200),4);
+    const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst10)*200),4);
+    const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
+    const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
+    const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
+    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:52px">
+      <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
+        <div style="width:14px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
+        <div style="width:14px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
+        <div style="width:14px;height:${rH}px;background:${rColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.6"></div>
       </div>
-      <div style="font-size:9px;color:var(--text3);writing-mode:vertical-rl;transform:rotate(180deg);height:28px">${fmtDate(h.date)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
     </div>`;
   }).join('');
 
-  html+=`<div class="section"><div class="sec-title">📊 20日三方資金動向</div>
+  html+=`<div class="section"><div class="sec-title">📊 10日三方資金動向</div>
   <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:14px">
-    <div style="display:flex;gap:1px;align-items:flex-end;overflow-x:auto">${barsHtml}</div>
-    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
-      <span style="font-size:var(--fs-xs)">左=外資　中=投信　右=散戶</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--red)">■</span> 買超</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--green)">■</span> 賣超</span>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
+    </div>
+    <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#f5a623">■</span> 大戶</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅/橘　賣超=綠/藍</span>
     </div>
   </div></div>`;
 
@@ -1590,39 +1649,41 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
 
   document.getElementById('stock-search-result-title').textContent=`${stockInfo.groupIcon} ${stockInfo.group}`;
 
-  // 20日三柱圖 + 大戶
-  const maxInst=Math.max(...displayHist.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
-  const maxVol=Math.max(...displayHist.map(h=>h.vol),1);
+  // 10日三柱圖（最近10天）
+  const last10search=displayHist.slice(-10);
+  const maxInst=Math.max(...last10search.map(h=>Math.max(Math.abs(h.foreignBuy),Math.abs(h.trustBuy))),1);
 
-  // 大戶：集保週資料
+  // 大戶：計算每週持股比例，找對應日期的變化
   const holdDates=[...new Set(holdRows.map(r=>r.date))].sort();
+  const bigDiffsForMax=holdDates.map((d,i)=>i>0?Math.abs(getBigPct(d)-getBigPct(holdDates[i-1])):0);
+  const maxBigDiff=Math.max(...bigDiffsForMax,0.01);
+  const BIG=['1,000-5,000','5,001-10,000','10,001-15,000','15,001-20,000'];
   const getBigPct=(date)=>{
-    const rows=holdRows.filter(r=>r.date===date&&r.HoldingSharesLevel&&!r.HoldingSharesLevel.includes('1-999')&&!r.HoldingSharesLevel.toLowerCase().includes('total'));
+    const rows=holdRows.filter(r=>r.date===date&&BIG.some(b=>r.HoldingSharesLevel&&r.HoldingSharesLevel.startsWith(b.split('-')[0].replace(',',''))));
     return rows.reduce((a,r)=>a+parseFloat(r.percent||0),0);
   };
-  const bigDiffArr=holdDates.map((d,i)=>i>0?{date:d,diff:getBigPct(d)-getBigPct(holdDates[i-1])}:{date:d,diff:0});
-  const maxBigDiff=Math.max(...bigDiffArr.map(b=>Math.abs(b.diff)),0.01);
 
-  const barsHtml=displayHist.map(h=>{
-    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*70),2);
-    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*70),2);
-    const volH=Math.max(Math.round((h.vol/maxVol)*70),2);
-    const fColor=h.foreignBuy>=0?'var(--red)':'var(--green)';
-    const tColor=h.trustBuy>=0?'var(--red)':'var(--green)';
-    const rColor=h.changePct>=0?'var(--red)':'var(--green)';
-    // 大戶：找<=當日最近的週資料
-    const nearBig=bigDiffArr.filter(b=>b.date<=h.date).slice(-1)[0];
-    const bigDiff=nearBig?nearBig.diff:0;
-    const bigH=bigDiff!==0?Math.max(Math.round((Math.abs(bigDiff)/maxBigDiff)*70),4):0;
+  const barsHtml=last10search.map(h=>{
+    const fH=Math.max(Math.round((Math.abs(h.foreignBuy)/maxInst)*200),4);
+    const tH=Math.max(Math.round((Math.abs(h.trustBuy)/maxInst)*200),4);
+    const rH=Math.max(Math.round((Math.abs(h.retailBuy||0)/maxInst)*200),4);
+    const fColor=h.foreignBuy>=0?'#e05a5a':'#5ab8a0';
+    const tColor=h.trustBuy>=0?'#a83030':'#2d7a60';
+    const rColor=(h.retailBuy||0)>=0?'#e08080':'#80c8b0';
+    // 找最近的大戶週資料（找<=當日最近的週資料）
+    const nearDate=holdDates.filter(d=>d<=h.date).slice(-1)[0];
+    const prevDate=nearDate?holdDates[holdDates.indexOf(nearDate)-1]:null;
+    const bigDiff=nearDate&&prevDate?getBigPct(nearDate)-getBigPct(prevDate):0;
+    const bigH=bigDiff!==0?Math.max(Math.round((Math.abs(bigDiff)/maxBigDiff)*200),8):0;
     const bigColor=bigDiff>=0?'#e05a5a':'#5ab8a0';
-    return`<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;margin-right:3px">
-      <div style="display:flex;gap:2px;align-items:flex-end;height:70px">
-        <div style="width:6px;height:${fH}px;background:${fColor};border-radius:2px 2px 0 0"></div>
-        <div style="width:6px;height:${bigH}px;background:${bigColor};border-radius:2px 2px 0 0"></div>
-        <div style="width:6px;height:${tH}px;background:${tColor};border-radius:2px 2px 0 0"></div>
-        <div style="width:6px;height:${Math.max(Math.round(volH*0.5),2)}px;background:${rColor};border-radius:2px 2px 0 0;opacity:.5"></div>
+    return`<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:64px">
+      <div style="display:flex;gap:3px;align-items:flex-end;height:200px">
+        <div style="width:12px;height:${fH}px;background:${fColor};border-radius:3px 3px 0 0;align-self:flex-end"></div>
+        <div style="width:12px;height:${bigH}px;background:${bigColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.9" title="大戶${bigDiff>=0?'+':''}${bigDiff.toFixed(2)}%"></div>
+        <div style="width:12px;height:${tH}px;background:${tColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.8"></div>
+        <div style="width:12px;height:${rH}px;background:${rColor};border-radius:3px 3px 0 0;align-self:flex-end;opacity:.6"></div>
       </div>
-      <div style="font-size:9px;color:var(--text3);writing-mode:vertical-rl;transform:rotate(180deg);height:28px">${fmtDate(h.date)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;white-space:nowrap">${fmtDate(h.date)}</div>
     </div>`;
   }).join('');
 
@@ -1661,14 +1722,19 @@ function renderStockDetail(stockInfo,priceRows,instRows,tradingDays,holdRows){
   </div>
 
   <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px">
-    <div style="font-size:var(--fs-sm);font-weight:600;color:var(--text3);margin-bottom:10px">📊 20日三方資金動向</div>
-    <div style="display:flex;gap:1px;align-items:flex-end;overflow-x:auto">${barsHtml}</div>
-    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
-      <span style="font-size:var(--fs-xs)">左=外資　中=投信　右=散戶</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--red)">■</span> 買超</span>
-      <span style="font-size:var(--fs-xs)"><span style="color:var(--green)">■</span> 賣超</span>
+    <div style="font-size:var(--fs-sm);font-weight:600;color:var(--text3);margin-bottom:10px">📊 10日三方資金動向</div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <div style="display:flex;gap:8px;align-items:flex-end;padding:0 4px 4px;min-width:max-content">${barsHtml}</div>
+    </div>
+    <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+      <span style="font-size:var(--fs-xs)"><span style="color:#e05a5a">■</span> 外資</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#f5a623">■</span> 大戶</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#a83030">■</span> 投信</span>
+      <span style="font-size:var(--fs-xs)"><span style="color:#e08080">■</span> 散戶</span>
+      <span style="font-size:var(--fs-xs);color:var(--text3)">買超=紅/橘　賣超=綠/藍</span>
     </div>
   </div>
+
 
   <a href="${SCREENER_URL}?stock=${sid}" target="_blank"
     style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--accent);border-radius:var(--r);text-decoration:none;cursor:pointer;margin-bottom:10px">
